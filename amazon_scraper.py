@@ -4,16 +4,15 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 
-# Amazon Search URL
-BASE_URL = "https://www.amazon.com/s?k=cosrx&i=beauty&crid=14BP4JLRJXR9Q&sprefix=cosrx%2Cbeauty%2C117&ref=nb_sb_noss_2"
-
 # Configure Selenium ChromeDriver with User-Agent Spoofing
 chrome_options = Options()
 chrome_options.add_argument("--headless")  # Run in headless mode
 chrome_options.add_argument("--disable-gpu")
 chrome_options.add_argument("--no-sandbox")
 chrome_options.add_argument("--disable-dev-shm-usage")
-chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+chrome_options.add_argument(
+    "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+)
 
 # Start WebDriver
 driver = webdriver.Chrome(options=chrome_options)
@@ -22,10 +21,10 @@ driver = webdriver.Chrome(options=chrome_options)
 scraped_data = []
 
 # Function to get paginated URLs
-def get_urls():
-    pages = [BASE_URL]  # First page
+def get_urls(base_url):
+    pages = [base_url]  # First page
     for page in range(2, 6):  # Scrape first 5 pages (adjust as needed)
-        pages.append(f"{BASE_URL}&page={page}")
+        pages.append(f"{base_url}&page={page}")
     return pages
 
 # Function to extract product data
@@ -34,10 +33,10 @@ def get_data(item):
         # Extract Name
         atag = item.find("h2")
         req_name = atag.text.strip() if atag else "No Name"
-        
+
         # Extract URL
         req_url = item.find("a", href=True)
-        req_url = "https://www.amazon.in" + req_url["href"] if req_url else "No URL"
+        req_url = "https://www.amazon.com" + req_url["href"] if req_url else "No URL"
 
         # Extract Price
         req_price = item.find("span", class_="a-offscreen")
@@ -64,7 +63,8 @@ def get_data(item):
 
 # Main scraping function
 def main():
-    urls = get_urls()
+    base_url = input("Enter the Amazon search URL: ").strip()  # Get URL from user input
+    urls = get_urls(base_url)
 
     for url in urls:
         print(f"Scraping page: {url}")
